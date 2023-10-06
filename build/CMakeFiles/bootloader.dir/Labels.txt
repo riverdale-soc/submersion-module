@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/home/rocket/esp/esp-idf/projects/espnow/build/CMakeFiles/bootloader
+/home/rocket/esp/esp-idf/projects/espnow/build/CMakeFiles/bootloader.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/CMakeFiles/bootloader-complete.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/home/rocket/esp/esp-idf/projects/espnow/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
