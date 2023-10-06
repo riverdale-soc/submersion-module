@@ -1,17 +1,24 @@
-/* ESPNOW Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
+/**
+ * @file submersion_module.c
+ * Author: Dmitri Lyalikov (Dlyalikov01@Manhattan.edu)
+ * Date: 10/6/2023
+ * Revision: 0.1
+ * @brief This is the entry point and main application for the submersion module.
+ * It will read from a water sensor and send the data to a receiver over ESP-NOW protocol.
+ * 
+ * 
+ * 
+ *   In order to get the MAC address of the other device, Device1 firstly send broadcast ESPNOW data with 'state' set as 0.
+ *   When Device2 receiving broadcast ESPNOW data from Device1 with 'state' as 0, adds Device1 into the peer list. 
+ *   Then start sending broadcast ESPNOW data with 'state' set as 1.
+ *   When Device1 receiving broadcast ESPNOW data with 'state' as 1, compares the local magic number with that in the data. 
+ *   If the local one is bigger than that one, stop sending broadcast ESPNOW data and starts sending unicast ESPNOW data to Device2.
+ *   If Device2 receives unicast ESPNOW data, also stop sending broadcast ESPNOW data.
+*
 */
 
-/*
-   This example shows how to use ESPNOW.
-   Prepare two device, one for sending ESPNOW data and another for receiving
-   ESPNOW data.
-*/
+/
+
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
@@ -41,7 +48,10 @@ static uint16_t s_espnow_seq[ESPNOW_DATA_MAX] = { 0, 0 };
 
 static void espnow_deinit(espnow_send_param_t *send_param);
 
-/* WiFi should start before using ESPNOW */
+
+/**
+ * Start WiFi before using ESP-NOW
+*/
 static void wifi_init(void)
 {
     ESP_ERROR_CHECK(esp_netif_init());
@@ -58,9 +68,12 @@ static void wifi_init(void)
 #endif
 }
 
-/* ESPNOW sending or receiving callback function is called in WiFi task.
- * Users should not do lengthy operations from this task. Instead, post
- * necessary data to a queue and handle it from a lower priority task. */
+/* 
+ * ESPNOW sending or receiving callback function is called in WiFi task.
+ * no lengthy operations from this task. Instead, post
+ * necessary data to a queue and handle it from a lower priority task. 
+*/
+
 static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
     espnow_event_t evt;
@@ -79,6 +92,9 @@ static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status
     }
 }
 
+/**
+ * @brief This function is called when a packet is received from the ESP-NOW protocol. (RX callback)
+*/
 static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len)
 {
     espnow_event_t evt;
@@ -147,6 +163,9 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     buf->crc = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, send_param->len);
 }
 
+/**
+ * @brief This is the esp-now task. It will send and receive ESPNOW data to/from other peers
+*/
 static void espnow_task(void *pvParameter)
 {
     espnow_event_t evt;
