@@ -34,15 +34,17 @@ low_thr:
     .long 0
 
     /* High threshold of ADC reading. 
-       set by the main program */
+    //  set by the main program */
     .global high_thr
 high_thr:
     .long 0
+
 
     /* Counter of measurements done */
     .global sample_counter
 sample_counter:
     .long 0
+
 
     .global last_result
 last_result:
