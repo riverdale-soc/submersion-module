@@ -30,7 +30,7 @@
 #include "driver/dac.h"
 #include "esp32/ulp.h"
 #include "ulp_main.h"
-#include "esp_adc/adc_one_shot.h"
+#include "esp_adc/adc_oneshot.h"
 #include <string.h>
 #include <assert.h>
 #include "freertos/FreeRTOS.h"
