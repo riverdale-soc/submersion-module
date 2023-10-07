@@ -35,6 +35,7 @@ low_thr:
 
     /* High threshold of ADC reading. 
        set by the main program */
+    .global high_thr
 high_thr:
     .long 0
 
