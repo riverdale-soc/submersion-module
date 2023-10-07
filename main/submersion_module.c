@@ -17,8 +17,6 @@
 *
 */
 
-/
-
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
@@ -54,13 +52,19 @@ static void espnow_deinit(espnow_send_param_t *send_param);
 */
 static void wifi_init(void)
 {
+    // init network interface layer
     ESP_ERROR_CHECK(esp_netif_init());
+    // create default event loop
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+    // create default network interface instance
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+    // Use RAM for storing WiFI config data
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
+    // Set WiFi operating mode to ESP-NOW
     ESP_ERROR_CHECK( esp_wifi_set_mode(ESPNOW_WIFI_MODE) );
     ESP_ERROR_CHECK( esp_wifi_start());
+    // Set channel for ESP-NOW
     ESP_ERROR_CHECK( esp_wifi_set_channel(CONFIG_ESPNOW_CHANNEL, WIFI_SECOND_CHAN_NONE));
 
 #if CONFIG_ESPNOW_ENABLE_LONG_RANGE
@@ -72,8 +76,10 @@ static void wifi_init(void)
  * ESPNOW sending or receiving callback function is called in WiFi task.
  * no lengthy operations from this task. Instead, post
  * necessary data to a queue and handle it from a lower priority task. 
+    * @brief This function is called when a packet is sent from the ESP-NOW protocol. (TX callback) 
+    * @arg mac_addr MAC address of the peer device to which the packet is sent
+    * @arg status Status of the packet sent
 */
-
 static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
     espnow_event_t evt;
@@ -84,6 +90,7 @@ static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status
         return;
     }
 
+    // Mark event as SEND_CB
     evt.id = ESPNOW_SEND_CB;
     memcpy(send_cb->mac_addr, mac_addr, ESP_NOW_ETH_ALEN);
     send_cb->status = status;
@@ -106,6 +113,7 @@ static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *
         return;
     }
 
+    // Mark event as RECV_CB
     evt.id = ESPNOW_RECV_CB;
     memcpy(recv_cb->mac_addr, mac_addr, ESP_NOW_ETH_ALEN);
     recv_cb->data = malloc(len);
@@ -121,7 +129,16 @@ static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *
     }
 }
 
-/* Parse received ESPNOW data. */
+/**
+ * @brief Parse and decompose ESPNOW data.
+ * 
+ * @param data data to be parsed
+ * @param data_len length of the data
+ * @param state state of the data
+ * @param seq  sequence number of the data
+ * @param magic magic number of the data
+ * @return int 
+ */
 int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, int *magic)
 {
     espnow_data_t *buf = (espnow_data_t *)data;
@@ -146,7 +163,11 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
     return -1;
 }
 
-/* Prepare ESPNOW data to be sent. */
+/**
+ * @brief Prepare message to be sent over ESP-NOW protocol.
+ * 
+ * @param send_param: parameters for sending data
+ */
 void espnow_data_prepare(espnow_send_param_t *send_param)
 {
     espnow_data_t *buf = (espnow_data_t *)send_param->buffer;
@@ -164,8 +185,10 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
 }
 
 /**
- * @brief This is the esp-now task. It will send and receive ESPNOW data to/from other peers
-*/
+ * @brief espnow_task is a task that sends and receives data over ESP-NOW protocol.
+ * 
+ * @param pvParameter 
+ */
 static void espnow_task(void *pvParameter)
 {
     espnow_event_t evt;
@@ -186,8 +209,10 @@ static void espnow_task(void *pvParameter)
         vTaskDelete(NULL);
     }
 
+    // Wait for Send or Receive event in espnow_queue indefinitely
     while (xQueueReceive(s_espnow_queue, &evt, portMAX_DELAY) == pdTRUE) {
         switch (evt.id) {
+            // Send event comes from the callback function of sending ESPNOW data
             case ESPNOW_SEND_CB:
             {
                 espnow_event_send_cb_t *send_cb = &evt.info.send_cb;
@@ -198,7 +223,7 @@ static void espnow_task(void *pvParameter)
                 if (is_broadcast && (send_param->broadcast == false)) {
                     break;
                 }
-
+                // If not broadcast, decrease the number of packets to be sent
                 if (!is_broadcast) {
                     send_param->count--;
                     if (send_param->count == 0) {
@@ -368,6 +393,7 @@ static esp_err_t espnow_init(void)
     memcpy(send_param->dest_mac, s_broadcast_mac, ESP_NOW_ETH_ALEN);
     espnow_data_prepare(send_param);
 
+    /* Create ESPNOW sending/Receiving task. */
     xTaskCreate(espnow_task, "espnow_task", 2048, send_param, 4, NULL);
 
     return ESP_OK;
@@ -381,6 +407,9 @@ static void espnow_deinit(espnow_send_param_t *send_param)
     esp_now_deinit();
 }
 
+/**
+ * @brief Main application entry point. Starts WiFi and ESP-NOW.
+ */
 void app_main(void)
 {
     // Initialize NVS
@@ -390,7 +419,8 @@ void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK( ret );
-
+    // Start WiFi before using ESP-NOW
     wifi_init();
+    // Initialize ESP-NOW and begin task
     espnow_init();
 }
