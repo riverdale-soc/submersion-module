@@ -456,7 +456,7 @@ static void init_ulp_program(void)
     ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_6, &config));
 
     /* Set low and high thresholds: approx 1.35V - 1.75V */
-    ulp_low_thr = 100;
+    ulp_low_thr = 0;
     ulp_high_thr = 2000;
 
     /* set ULP wake up period to 20 ms */
