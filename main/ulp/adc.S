@@ -50,7 +50,7 @@ last_result:
     /* Code goes into .text section (executable instructions) */
     .text
     .global entry
-.entry 
+.entry:
     /* Increment sample counter */
     move r3, sample_counter
     ld r2, r3, 0
