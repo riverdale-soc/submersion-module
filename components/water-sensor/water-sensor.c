@@ -1,10 +1,10 @@
 /**
  * @file water-sensor.c
-*/
-
-
-
-
+ * @author Dmitri Lyalikov (Dlyalikov01@Manhattan.edu)
+ * @brief ADC Driver and Calibration for Water Sensor
+ * @version 0.1
+ * @date 2023-10-06
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,7 +43,9 @@ const static char *TAG = "ADC_CALI";
 static int adc_raw[2][10];
 static int voltage[2][10];
 
-
+/**
+ * @brief ADC Read
+ */
 void adc_read_oneshot(void)
 {
     //-------------ADC1 Init---------------//
@@ -80,7 +82,15 @@ void adc_read_oneshot(void)
     }
 }
 
-
+/**
+ * @brief Calibration Init
+ * 
+ * @param unit unit of ADC (ADC_UNIT_1 or ADC_UNIT_2)
+ * @param atten set attenuation of ADC
+ * @param out_handle output calibration handle
+ * @return true 
+ * @return false 
+ */
 static bool adc_calibration_init(adc_unit_t unit, adc_atten_t atten, adc_cali_handle_t *out_handle)
 {
     adc_cali_handle_t handle = NULL;
