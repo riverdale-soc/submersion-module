@@ -35,7 +35,7 @@ low_thr:
 
     /* High threshold of ADC reading. 
        set by the main program */
-high_thr
+high_thr:
     .long 0
 
     /* Counter of measurements done */
