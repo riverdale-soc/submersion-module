@@ -509,8 +509,8 @@ void app_main(void)
         printf("Value=%"PRIu32" was %s threshold\n", ulp_last_result,
                 ulp_last_result < ulp_low_thr ? "below" : "above");
     }
-    printf("Entering deep sleep\n\n");
-    start_ulp_program();
-    ESP_ERROR_CHECK( esp_sleep_enable_ulp_wakeup() );
-    esp_deep_sleep_start();
+    // printf("Entering deep sleep\n\n");
+    // start_ulp_program();
+    // ESP_ERROR_CHECK( esp_sleep_enable_ulp_wakeup() );
+    //esp_deep_sleep_start();
 }
