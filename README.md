@@ -8,7 +8,7 @@
 * Add ESPNOW peer information.
 * Send and receive ESPNOW data.
 
-<<<<<<< HEAD
+
 ![Software State Machine](docs/fsm.png)
 =======
 
