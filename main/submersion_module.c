@@ -46,6 +46,7 @@
 #include "esp_now.h"
 #include "esp_crc.h"
 #include "submersion_module.h"
+#include "gps_parser.h"
 
 // Base and end addresses of ULP coprocessor program binary blob
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
