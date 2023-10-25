@@ -8,6 +8,8 @@
 * Add ESPNOW peer information.
 * Send and receive ESPNOW data.
 
+![Software State Machine](docs/fsm.png)
+
 This needs at least two ESP devices:
 
 * In order to get the MAC address of the other device, Device1 firstly send broadcast ESPNOW data with 'state' set as 0.
