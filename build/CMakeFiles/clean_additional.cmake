@@ -3,13 +3,13 @@ cmake_minimum_required(VERSION 3.16)
 
 if("${CONFIG}" STREQUAL "" OR "${CONFIG}" STREQUAL "")
   file(REMOVE_RECURSE
-  "bootloader/bootloader.bin"
-  "bootloader/bootloader.elf"
-  "bootloader/bootloader.map"
-  "config/sdkconfig.cmake"
-  "config/sdkconfig.h"
-  "esp-idf/esptool_py/flasher_args.json.in"
-  "esp-idf/mbedtls/x509_crt_bundle"
+  "bootloader\\bootloader.bin"
+  "bootloader\\bootloader.elf"
+  "bootloader\\bootloader.map"
+  "config\\sdkconfig.cmake"
+  "config\\sdkconfig.h"
+  "esp-idf\\esptool_py\\flasher_args.json.in"
+  "esp-idf\\mbedtls\\x509_crt_bundle"
   "espnow_example.bin"
   "espnow_example.map"
   "flash_app_args"
@@ -19,6 +19,7 @@ if("${CONFIG}" STREQUAL "" OR "${CONFIG}" STREQUAL "")
   "ldgen_libraries"
   "ldgen_libraries.in"
   "project_elf_src_esp32.c"
+  "ulp_main.bin.S"
   "x509_crt_bundle.S"
   )
 endif()

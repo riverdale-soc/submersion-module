@@ -2980,8 +2980,8 @@
             },
             {
                 "children": [],
-                "depends_on": "SECURE_SIGNED_APPS && SECURE_SIGNED_APPS_ECDSA_SCHEME && !SECURE_BOOT_BUILD_SIGNED_BINARIES",
-                "help": "Path to a public key file used to verify signed images.\nSecure Boot V1: This ECDSA public key is compiled into the bootloader and/or\napp, to verify app images.\n\nKey file is in raw binary format, and can be extracted from a\nPEM formatted private key using the espsecure.py\nextract_public_key command.\n\nRefer to the Secure Boot section of the ESP-IDF Programmer's Guide for this version before enabling.",
+                "depends_on": "SECURE_SIGNED_APPS && !SECURE_BOOT_BUILD_SIGNED_BINARIES && !SECURE_SIGNED_APPS_RSA_SCHEME",
+                "help": "Path to a public key file used to verify signed images.\nSecure Boot V1: This ECDSA public key is compiled into the bootloader and/or\napp, to verify app images.\nSecure Boot V2: This RSA public key is compiled into the signature block at\nthe end of the bootloader/app.\n\nKey file is in raw binary format, and can be extracted from a\nPEM formatted private key using the espsecure.py\nextract_public_key command.\n\nRefer to the Secure Boot section of the ESP-IDF Programmer's Guide for this version before enabling.",
                 "id": "SECURE_BOOT_VERIFICATION_KEY",
                 "name": "SECURE_BOOT_VERIFICATION_KEY",
                 "range": null,
@@ -4193,6 +4193,174 @@
     {
         "children": [
             {
+                "children": [],
+                "depends_on": null,
+                "help": null,
+                "id": "ENV_GPIO_RANGE_MIN",
+                "name": "ENV_GPIO_RANGE_MIN",
+                "range": null,
+                "title": null,
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": null,
+                "id": "ENV_GPIO_RANGE_MAX",
+                "name": "ENV_GPIO_RANGE_MAX",
+                "range": null,
+                "title": null,
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": null,
+                "id": "ENV_GPIO_IN_RANGE_MAX",
+                "name": "ENV_GPIO_IN_RANGE_MAX",
+                "range": null,
+                "title": null,
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": null,
+                "id": "ENV_GPIO_OUT_RANGE_MAX",
+                "name": "ENV_GPIO_OUT_RANGE_MAX",
+                "range": null,
+                "title": null,
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "GPIO number for UART RX pin. See UART documentation for more information\nabout available pin numbers for UART.",
+                "id": "NMEA_PARSER_UART_RXD",
+                "name": "NMEA_PARSER_UART_RXD",
+                "range": [
+                    0,
+                    39
+                ],
+                "title": "UART RXD pin number",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Size of the ring buffer used for UART Rx channel.",
+                "id": "NMEA_PARSER_RING_BUFFER_SIZE",
+                "name": "NMEA_PARSER_RING_BUFFER_SIZE",
+                "range": [
+                    0,
+                    2048
+                ],
+                "title": "NMEA Parser Ring Buffer Size",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Stack size of NMEA Parser task.",
+                "id": "NMEA_PARSER_TASK_STACK_SIZE",
+                "name": "NMEA_PARSER_TASK_STACK_SIZE",
+                "range": [
+                    0,
+                    4096
+                ],
+                "title": "NMEA Parser Task Stack Size",
+                "type": "int"
+            },
+            {
+                "children": [],
+                "depends_on": null,
+                "help": "Priority of NMEA Parser task.",
+                "id": "NMEA_PARSER_TASK_PRIORITY",
+                "name": "NMEA_PARSER_TASK_PRIORITY",
+                "range": [
+                    0,
+                    24
+                ],
+                "title": "NMEA Parser Task Priority",
+                "type": "int"
+            },
+            {
+                "children": [
+                    {
+                        "children": [],
+                        "depends_on": null,
+                        "help": "Enabling this option will parse the following parameter from GGA statement:\n\n- Latitude, Longitude, Altitude;\n- Number of satellites in use, fix status (no fix, GPS, DGPS), UTC time;",
+                        "id": "NMEA_STATEMENT_GGA",
+                        "name": "NMEA_STATEMENT_GGA",
+                        "range": null,
+                        "title": "GGA Statement",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": null,
+                        "help": "Enabling this option will parse the following parameter from GSA statement:\n\n- Position/Vertical/Horizontal dilution of precision;\n- Fix mode (no fix, 2D, 3D fix);\n- IDs of satellites in use;",
+                        "id": "NMEA_STATEMENT_GSA",
+                        "name": "NMEA_STATEMENT_GSA",
+                        "range": null,
+                        "title": "GSA Statement",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": null,
+                        "help": "Enabling this option will parse the following parameter from GSV statement:\n\n- Number of satellites in view;\n- Optional details of each satellite in view;",
+                        "id": "NMEA_STATEMENT_GSV",
+                        "name": "NMEA_STATEMENT_GSV",
+                        "range": null,
+                        "title": "GSV Statement",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": null,
+                        "help": "Enabling this option will parse the following parameter from RMC statement:\n\n- Validity of GPS signal;\n- Ground speed (knots) and course over ground (degrees);\n- Magnetic variation;\n- UTC date;",
+                        "id": "NMEA_STATEMENT_RMC",
+                        "name": "NMEA_STATEMENT_RMC",
+                        "range": null,
+                        "title": "RMC Statement",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": null,
+                        "help": "Enabling this option will parse the following parameter from GLL statement:\n\n- Latitude, Longitude;\n- UTC time;",
+                        "id": "NMEA_STATEMENT_GLL",
+                        "name": "NMEA_STATEMENT_GLL",
+                        "range": null,
+                        "title": "GLL Statement",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": null,
+                        "help": "Enabling this option will parse the following parameter from VTG statement:\n\n- Ground speed (knots, km/h) and course over ground (degrees);\n- Magnetic variation;",
+                        "id": "NMEA_STATEMENT_VTG",
+                        "name": "NMEA_STATEMENT_VTG",
+                        "range": null,
+                        "title": "VTG Statement",
+                        "type": "bool"
+                    }
+                ],
+                "depends_on": null,
+                "id": "example-configuration-nmea-statement-support",
+                "title": "NMEA Statement Support",
+                "type": "menu"
+            }
+        ],
+        "depends_on": null,
+        "id": "example-configuration",
+        "title": "Example Configuration",
+        "type": "menu"
+    },
+    {
+        "children": [
+            {
                 "children": [
                     {
                         "children": [],
@@ -5008,18 +5176,7 @@
                         "type": "menu"
                     },
                     {
-                        "children": [
-                            {
-                                "children": [],
-                                "depends_on": "APPTRACE_GCOV_ENABLE",
-                                "help": "Configures stack size of Gcov dump task",
-                                "id": "APPTRACE_GCOV_DUMP_TASK_STACK_SIZE",
-                                "name": "APPTRACE_GCOV_DUMP_TASK_STACK_SIZE",
-                                "range": null,
-                                "title": "Gcov dump task stack size",
-                                "type": "int"
-                            }
-                        ],
+                        "children": [],
                         "depends_on": "APPTRACE_ENABLE && !APPTRACE_SV_ENABLE",
                         "help": "Enables support for GCOV data transfer to host.",
                         "id": "APPTRACE_GCOV_ENABLE",
@@ -5455,36 +5612,6 @@
                                                 "range": null,
                                                 "title": null,
                                                 "type": "int"
-                                            },
-                                            {
-                                                "children": [],
-                                                "depends_on": "BT_GATTS_ENABLE && BT_BLUEDROID_ENABLED",
-                                                "help": "This option enable gatt robust caching feature on server",
-                                                "id": "BT_GATTS_ROBUST_CACHING_ENABLED",
-                                                "name": "BT_GATTS_ROBUST_CACHING_ENABLED",
-                                                "range": null,
-                                                "title": "Enable Robust Caching on Server Side",
-                                                "type": "bool"
-                                            },
-                                            {
-                                                "children": [],
-                                                "depends_on": "BT_GATTS_ENABLE && BT_BLUEDROID_ENABLED",
-                                                "help": "Enabling this option allows remote GATT clients to write device name",
-                                                "id": "BT_GATTS_DEVICE_NAME_WRITABLE",
-                                                "name": "BT_GATTS_DEVICE_NAME_WRITABLE",
-                                                "range": null,
-                                                "title": "Allow to write device name by GATT clients",
-                                                "type": "bool"
-                                            },
-                                            {
-                                                "children": [],
-                                                "depends_on": "BT_GATTS_ENABLE && BT_BLUEDROID_ENABLED",
-                                                "help": "Enabling this option allows remote GATT clients to write appearance",
-                                                "id": "BT_GATTS_APPEARANCE_WRITABLE",
-                                                "name": "BT_GATTS_APPEARANCE_WRITABLE",
-                                                "range": null,
-                                                "title": "Allow to write appearance by GATT clients",
-                                                "type": "bool"
                                             }
                                         ],
                                         "depends_on": "BT_BLE_ENABLED && BT_BLUEDROID_ENABLED",
@@ -7576,16 +7703,6 @@
                             },
                             {
                                 "children": [],
-                                "depends_on": "BT_BLUEDROID_ENABLED && BT_BLUEDROID_ENABLED",
-                                "help": "This set RPA timeout of Controller and Host.\nDefault is 900 s (15 minutes). Range is 1 s to 1 hour (3600 s).",
-                                "id": "BT_BLE_RPA_TIMEOUT",
-                                "name": "BT_BLE_RPA_TIMEOUT",
-                                "range": null,
-                                "title": "Timeout of resolvable private address",
-                                "type": "int"
-                            },
-                            {
-                                "children": [],
                                 "depends_on": "BT_BLUEDROID_ENABLED && (IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3 || SOC_ESP_NIMBLE_CONTROLLER) && BT_BLUEDROID_ENABLED",
                                 "help": "This enables BLE 5.0 features, this option only support esp32c3/esp32s3 chip",
                                 "id": "BT_BLE_50_FEATURES_SUPPORTED",
@@ -7602,36 +7719,6 @@
                                 "name": "BT_BLE_42_FEATURES_SUPPORTED",
                                 "range": null,
                                 "title": "Enable BLE 4.2 features",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "BT_BLUEDROID_ENABLED && BT_BLE_50_FEATURES_SUPPORTED && SOC_ESP_NIMBLE_CONTROLLER && BT_BLUEDROID_ENABLED",
-                                "help": "This enables BLE periodic advertising sync transfer feature",
-                                "id": "BT_BLE_FEAT_PERIODIC_ADV_SYNC_TRANSFER",
-                                "name": "BT_BLE_FEAT_PERIODIC_ADV_SYNC_TRANSFER",
-                                "range": null,
-                                "title": "Enable BLE periodic advertising sync transfer feature",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "BT_BLUEDROID_ENABLED && BT_BLE_50_FEATURES_SUPPORTED && SOC_ESP_NIMBLE_CONTROLLER && BT_BLUEDROID_ENABLED",
-                                "help": "Enable the periodic advertising enhancements",
-                                "id": "BT_BLE_FEAT_PERIODIC_ADV_ENH",
-                                "name": "BT_BLE_FEAT_PERIODIC_ADV_ENH",
-                                "range": null,
-                                "title": "Enable periodic adv enhancements(adi support)",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "BT_BLUEDROID_ENABLED && BT_BLUEDROID_ENABLED",
-                                "help": "This enable BLE high duty advertising interval feature",
-                                "id": "BT_BLE_HIGH_DUTY_ADV_INTERVAL",
-                                "name": "BT_BLE_HIGH_DUTY_ADV_INTERVAL",
-                                "range": null,
-                                "title": "Enable BLE high duty advertising interval feature",
                                 "type": "bool"
                             }
                         ],
@@ -8550,26 +8637,6 @@
                                 "name": "BT_NIMBLE_BLE_GATT_BLOB_TRANSFER",
                                 "range": null,
                                 "title": "Blob transfer",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "BT_NIMBLE_ENABLED && BT_NIMBLE_ENABLED",
-                                "help": "This enable BLE high duty advertising interval feature",
-                                "id": "BT_NIMBLE_HIGH_DUTY_ADV_ITVL",
-                                "name": "BT_NIMBLE_HIGH_DUTY_ADV_ITVL",
-                                "range": null,
-                                "title": "Enable BLE high duty advertising interval feature",
-                                "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "BT_NIMBLE_ENABLED && BT_NIMBLE_ENABLED",
-                                "help": "When scanning and scan duplicate is not enabled, if there are a lot of adv packets around\nor application layer handling adv packets is slow, it will cause the controller memory\nto run out. if enabled, adv packets will be lost when host queue is congested.",
-                                "id": "BT_NIMBLE_HOST_QUEUE_CONG_CHECK",
-                                "name": "BT_NIMBLE_HOST_QUEUE_CONG_CHECK",
-                                "range": null,
-                                "title": "BLE queue congestion check",
                                 "type": "bool"
                             }
                         ],
@@ -11832,16 +11899,6 @@
                                 "range": null,
                                 "title": "Enable software flow control",
                                 "type": "bool"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": "ETH_USE_ESP32_EMAC",
-                                "help": "If enabled, functions related to RX/TX are placed into IRAM. It can improve Ethernet throughput.\nIf disabled, all functions are placed into FLASH.",
-                                "id": "ETH_IRAM_OPTIMIZATION",
-                                "name": "ETH_IRAM_OPTIMIZATION",
-                                "range": null,
-                                "title": "Enable IRAM optimization",
-                                "type": "bool"
                             }
                         ],
                         "depends_on": "IDF_TARGET_ESP32",
@@ -12485,16 +12542,6 @@
                                 ],
                                 "title": "Extra delay in deep sleep wake stub (in us)",
                                 "type": "int"
-                            },
-                            {
-                                "children": [],
-                                "depends_on": null,
-                                "help": "When using rtc gpio wakeup source during deepsleep without external pull-up/downs, you may want to\nmake use of the internal ones.",
-                                "id": "ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS",
-                                "name": "ESP_SLEEP_GPIO_ENABLE_INTERNAL_RESISTORS",
-                                "range": null,
-                                "title": "Allow to enable internal pull-up/downs for the Deep-Sleep wakeup IOs",
-                                "type": "bool"
                             }
                         ],
                         "depends_on": null,
@@ -15512,16 +15559,6 @@
                         "name": "ESP_WIFI_WPS_PASSPHRASE",
                         "range": null,
                         "title": "Get WPA2 passphrase in WPS config",
-                        "type": "bool"
-                    },
-                    {
-                        "children": [],
-                        "depends_on": null,
-                        "help": "Select this to enable/disable enterprise connection support.\n\ndisabling this will reduce binary size.\ndisabling this will disable the use of any esp_wifi_sta_wpa2_ent_* (as APIs will be meaningless)",
-                        "id": "ESP_WIFI_ENTERPRISE_SUPPORT",
-                        "name": "ESP_WIFI_ENTERPRISE_SUPPORT",
-                        "range": null,
-                        "title": "Enable enterprise option",
                         "type": "bool"
                     }
                 ],
@@ -22071,7 +22108,10 @@
                                 "help": "Bytes of memory to reserve for ULP Co-processor firmware & data.\nData is reserved at the beginning of RTC slow memory.",
                                 "id": "ULP_COPROC_RESERVE_MEM",
                                 "name": "ULP_COPROC_RESERVE_MEM",
-                                "range": null,
+                                "range": [
+                                    32,
+                                    8176
+                                ],
                                 "title": "RTC slow memory reserved for coprocessor",
                                 "type": "int"
                             }

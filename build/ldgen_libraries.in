@@ -58,5 +58,7 @@ $<TARGET_FILE:__idf_perfmon>
 $<TARGET_FILE:__idf_spiffs>
 $<TARGET_FILE:__idf_ulp>
 $<TARGET_FILE:__idf_wifi_provisioning>
+$<TARGET_FILE:__idf_gps_parser>
 $<TARGET_FILE:__idf_main>
+$<TARGET_FILE:__idf_nmea_parser>
 $<TARGET_FILE:__idf_water-sensor>

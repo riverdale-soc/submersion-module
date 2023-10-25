@@ -1,4 +1,4 @@
-/* * Data converted from /home/rocket/esp/esp-idf/projects/espnow/build/esp-idf/mbedtls/x509_crt_bundle
+/* * Data converted from C:/Espressif/frameworks/esp-idf-v5.0.4/projects/submersion-module/build/esp-idf/mbedtls/x509_crt_bundle
  */
 .data
 .section .rodata.embedded
