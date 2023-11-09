@@ -461,6 +461,17 @@ static void init_ulp_program(void)
     ulp_low_thr = 0;
     ulp_high_thr = 2000;
 
+    gpio_num_t VSense_Pin = GPIO_NUM_35;
+    int rtcio_num = rtc_io_number_get(VSense_Pin);
+    assert(rtc_gpio_is_valid_gpio(VSense_Pin) && "GPIO used for pulse counting must be an RTC IO");
+    ulp_io_number = rtcio_num;
+
+    // Set VSense_Pin as an output for the ULP to control
+    rtc_gpio_init(VSense_Pin);
+    rtc_gpio_set_direction(VSense_Pin, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(VSense_Pin, 0);
+    rtc_gpio_hold_en(VSense_Pin);
+
     /* set ULP wake up period to 20 ms */
     ulp_set_wakeup_period(0, 20000);
 

@@ -16,6 +16,7 @@
  */
 #include "soc/rtc_cntl_reg.h"
 #include "soc/soc_ulp.h"
+#include "soc/rtc_io_reg.h"
 
 	/* ADC1 channel 6, GPIO34 */
 	.set adc_channel, 6
@@ -49,10 +50,20 @@ sample_counter:
 last_result:
 	.long 0
 
+	/* RTC IO number used to power on/off the sensor.
+	   Set by main program. */
+	.global io_number
+io_number:
+	.long 0
+
 	/* Code goes into .text section */
 	.text
 	.global entry
 entry:
+	/* Configure the RTC IO to power on the sensor */
+	// Get io_number
+	move r3, io_number
+	ld r3, r3, 0
 	/* increment sample counter */
 	move r3, sample_counter
 	ld r2, r3, 0
@@ -63,6 +74,9 @@ entry:
 	/* r0 will be used as accumulator */
 	move r0, 0
 	/* initialize the loop counter */
+	// Turn on VSense_Pin
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 14, 16)
+
 	stage_rst
 measure:
 	/* measure and add value to accumulator */
@@ -71,6 +85,8 @@ measure:
 	/* increment loop counter and check exit condition */
 	stage_inc 1
 	jumps measure, adc_oversampling_factor, lt
+
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 14, 0)
 
 	/* divide accumulator by adc_oversampling_factor.
 	   Since it is chosen as a power of two, use right shift */
