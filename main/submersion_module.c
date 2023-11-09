@@ -49,6 +49,10 @@
 #include "gps_parser.h"
 #include "nmea_parser.h"
 
+// Allocate GPIO32 - GPS Enable as an GPIO Output
+#define GPS_ENABLE 32
+
+
 // Base and end addresses of ULP coprocessor program binary blob
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[]   asm("_binary_ulp_main_bin_end");
@@ -463,7 +467,7 @@ static void init_ulp_program(void)
 
     gpio_num_t VSense_Pin = GPIO_NUM_35;
     int rtcio_num = rtc_io_number_get(VSense_Pin);
-    assert(rtc_gpio_is_valid_gpio(VSense_Pin) && "GPIO used for pulse counting must be an RTC IO");
+    assert(rtc_gpio_is_valid_gpio(VSense_Pin) && "GPIO used for VSense_Pin must be an RTC IO");
     ulp_io_number = rtcio_num;
 
     // Set VSense_Pin as an output for the ULP to control
@@ -494,6 +498,34 @@ static void start_ulp_program(void)
     ESP_ERROR_CHECK(err);
 }
 
+static void gps_enable_init(void) 
+{
+    // Enable GPS
+    gpio_reset_pin(GPS_ENABLE);
+    /* Set the GPIO as a push/pull output */
+    gpio_set_direction(GPS_ENABLE, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPS_ENABLE, 0);
+}
+
+static void gps_power_on(void)
+{
+    gpio_set_level(GPS_ENABLE, 1);
+}
+
+static void gps_power_off(void)
+{
+    gpio_set_level(GPS_ENABLE, 0);
+}
+
+/**
+    // Set latitude and longitude fields in the payload array
+    payload->payload[0] = state;
+    memcpy(&payload->payload[1], &latitude, sizeof(float));
+    memcpy(&payload->payload[1 + sizeof(float)], &longitude, sizeof(float));
+
+    // Calculate and set the CRC16 value
+    payload->crc = calculateCRC(payload, sizeof(espnow_data_t) - sizeof(uint16_t));
+*/ 
 /**
  * @brief Main application entry point. Starts WiFi and ESP-NOW.
  */
