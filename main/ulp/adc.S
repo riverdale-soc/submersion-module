@@ -60,6 +60,12 @@ io_number:
 	.text
 	.global entry
 entry:
+    // Turn on ALL OUTPUT GPIOS
+	
+	/* Set bit 5 of RTC_GPIO_OUT_REG to turn on GPIO35 */
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 1 << 6, 1)
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_REG, 1 <<6, 1)
+
 	/* Configure the RTC IO to power on the sensor */
 	// Get io_number
 	move r3, io_number
@@ -75,7 +81,7 @@ entry:
 	move r0, 0
 	/* initialize the loop counter */
 	// Turn on VSense_Pin
-	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 14, 16)
+	
 
 	stage_rst
 measure:

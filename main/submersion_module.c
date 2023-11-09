@@ -463,12 +463,19 @@ static void init_ulp_program(void)
 
     /* Set low and high thresholds: approx 1.35V - 1.75V */
     ulp_low_thr = 0;
-    ulp_high_thr = 2000;
+    ulp_high_thr = 300;
 
-    gpio_num_t VSense_Pin = GPIO_NUM_35;
+    gpio_num_t VSense_Pin = GPIO_NUM_25;
+        gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << VSense_Pin),
+        .mode = GPIO_MODE_OUTPUT,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    ESP_ERROR_CHECK(gpio_config(&io_conf));
     int rtcio_num = rtc_io_number_get(VSense_Pin);
     assert(rtc_gpio_is_valid_gpio(VSense_Pin) && "GPIO used for VSense_Pin must be an RTC IO");
     ulp_io_number = rtcio_num;
+    
 
     // Set VSense_Pin as an output for the ULP to control
     rtc_gpio_init(VSense_Pin);
@@ -560,8 +567,8 @@ void app_main(void)
         printf("Value=%"PRIu32" was %s threshold\n", ulp_last_result,
                 ulp_last_result < ulp_low_thr ? "below" : "above");
     }
-    // printf("Entering deep sleep\n\n");
-    // start_ulp_program();
-    // ESP_ERROR_CHECK( esp_sleep_enable_ulp_wakeup() );
-    //esp_deep_sleep_start();
+    printf("Entering deep sleep\n\n");
+    start_ulp_program();
+    ESP_ERROR_CHECK( esp_sleep_enable_ulp_wakeup() );
+    esp_deep_sleep_start();
 }

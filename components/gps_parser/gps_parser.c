@@ -2,6 +2,11 @@
 #include <string.h>
 #include "gps_parser.h"
 #include "lwgps.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_system.h"
+#include "esp_log.h"
 /**
  * This example uses direct processing function
  * to process dummy NMEA data from GPS receiver
@@ -43,4 +48,35 @@ int parse() {
     printf("Altitude: %f meters\r\n", hgps.altitude);
 
     return 0;
+}
+
+/**
+ * @brief Initialize Mailbox Queue
+ * @returns QueueHandle_T: Handle to initialize queue  
+ */
+QueueHandle_t vQueueInit(void)
+{   
+    return xQueueCreate(1, sizeof(hgps));
+}
+
+/**
+ * @brief Write a value to queue
+ * 
+ * @param Queue : queue handle of type QueueHandle_t
+ * @param ulNewValue : uin16_t value to write
+ */
+void vUpdateQueue(QueueHandle_t Queue, lwgps_t pxData)
+{
+    xQueueOverwrite(Queue, &pxData);
+}
+
+/**
+ * @brief Read queue and pop value read, 
+ * 
+ * @param pxData : Pointer to struct of type weather_data to read into
+ * @param Queue  : Queue handle of type QueueHandle_t to read from
+ */
+void vReadQueue(lwgps_t *pxData, QueueHandle_t Queue)
+{
+    xQueuePeek(Queue, pxData,  pdMS_TO_TICKS(100));
 }
