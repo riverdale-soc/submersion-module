@@ -86,7 +86,7 @@ measure:
 	stage_inc 1
 	jumps measure, adc_oversampling_factor, lt
 
-	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 14, 0)
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 14, 32)
 
 	/* divide accumulator by adc_oversampling_factor.
 	   Since it is chosen as a power of two, use right shift */
