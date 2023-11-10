@@ -61,10 +61,6 @@ io_number:
 	.global entry
 entry:
     // Turn on ALL OUTPUT GPIOS
-	
-	/* Set bit 5 of RTC_GPIO_OUT_REG to turn on GPIO35 */
-	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 1 << 6, 1)
-	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_REG, 1 <<6, 1)
 
 	/* Configure the RTC IO to power on the sensor */
 	// Get io_number
@@ -81,6 +77,8 @@ entry:
 	move r0, 0
 	/* initialize the loop counter */
 	// Turn on VSense_Pin
+
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG,RTC_GPIO_OUT_DATA_S+6,1,1)
 	
 
 	stage_rst
@@ -92,7 +90,7 @@ measure:
 	stage_inc 1
 	jumps measure, adc_oversampling_factor, lt
 
-	WRITE_RTC_REG(RTC_GPIO_OUT_REG, RTC_GPIO_OUT_DATA, 14, 32)
+	WRITE_RTC_REG(RTC_GPIO_OUT_REG,RTC_GPIO_OUT_DATA_S+6,1,0)
 
 	/* divide accumulator by adc_oversampling_factor.
 	   Since it is chosen as a power of two, use right shift */

@@ -465,23 +465,9 @@ static void init_ulp_program(void)
     ulp_low_thr = 0;
     ulp_high_thr = 300;
 
-    gpio_num_t VSense_Pin = GPIO_NUM_25;
-        gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << VSense_Pin),
-        .mode = GPIO_MODE_OUTPUT,
-        .intr_type = GPIO_INTR_DISABLE,
-    };
-    ESP_ERROR_CHECK(gpio_config(&io_conf));
-    int rtcio_num = rtc_io_number_get(VSense_Pin);
-    assert(rtc_gpio_is_valid_gpio(VSense_Pin) && "GPIO used for VSense_Pin must be an RTC IO");
-    ulp_io_number = rtcio_num;
-    
-
-    // Set VSense_Pin as an output for the ULP to control
-    rtc_gpio_init(VSense_Pin);
-    rtc_gpio_set_direction(VSense_Pin, RTC_GPIO_MODE_OUTPUT_ONLY);
-    rtc_gpio_set_level(VSense_Pin, 0);
-    rtc_gpio_hold_en(VSense_Pin);
+    rtc_gpio_init(25);
+    rtc_gpio_set_direction(25, RTC_GPIO_MODE_OUTPUT_ONLY);
+    rtc_gpio_set_level(25,0);
 
     /* set ULP wake up period to 20 ms */
     ulp_set_wakeup_period(0, 20000);
