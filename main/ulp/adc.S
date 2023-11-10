@@ -60,12 +60,6 @@ io_number:
 	.text
 	.global entry
 entry:
-    // Turn on ALL OUTPUT GPIOS
-
-	/* Configure the RTC IO to power on the sensor */
-	// Get io_number
-	move r3, io_number
-	ld r3, r3, 0
 	/* increment sample counter */
 	move r3, sample_counter
 	ld r2, r3, 0
@@ -79,8 +73,6 @@ entry:
 	// Turn on VSense_Pin
 
 	WRITE_RTC_REG(RTC_GPIO_OUT_REG,RTC_GPIO_OUT_DATA_S+6,1,1)
-	
-
 	stage_rst
 measure:
 	/* measure and add value to accumulator */
