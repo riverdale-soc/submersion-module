@@ -29,6 +29,16 @@
 #include "freertos/timers.h"
 #include "esp_random.h"
 
+/**
+    // Set latitude and longitude fields in the payload array
+    payload->payload[0] = state;
+    memcpy(&payload->payload[1], &latitude, sizeof(float));
+    memcpy(&payload->payload[1 + sizeof(float)], &longitude, sizeof(float));
+
+    // Calculate and set the CRC16 value
+    payload->crc = calculateCRC(payload, sizeof(espnow_data_t) - sizeof(uint16_t));
+*/ 
+
 /* ESPNOW can work in both station and softap mode. It is configured in menuconfig. */
 #if CONFIG_ESPNOW_WIFI_MODE_STATION
 #define ESPNOW_WIFI_MODE WIFI_MODE_STA

@@ -121,16 +121,6 @@ static void start_ulp_program(void)
 }
 
 
-
-/**
-    // Set latitude and longitude fields in the payload array
-    payload->payload[0] = state;
-    memcpy(&payload->payload[1], &latitude, sizeof(float));
-    memcpy(&payload->payload[1 + sizeof(float)], &longitude, sizeof(float));
-
-    // Calculate and set the CRC16 value
-    payload->crc = calculateCRC(payload, sizeof(espnow_data_t) - sizeof(uint16_t));
-*/ 
 /**
  * @brief Main application entry point. Starts WiFi and ESP-NOW.
  * 
