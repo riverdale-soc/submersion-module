@@ -1,6 +1,6 @@
 idf_component_register(SRCS "submersion_module.c"
                     INCLUDE_DIRS "."
-                    REQUIRES nmea_parser touch_sensor gps_parser soc nvs_flash ulp driver esp_adc esp_event esp_netif esp_wifi)
+                    REQUIRES nmea_parser gps_control touch_sensor gps_parser soc nvs_flash ulp driver esp_adc esp_event esp_netif esp_wifi)
 #
 # ULP support additions to component CMakeLists.txt.
 #

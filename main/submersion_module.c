@@ -49,9 +49,7 @@
 #include "gps_parser.h"
 #include "nmea_parser.h"
 #include "touch_sensor.h"
-
-// Allocate GPIO32 - GPS Enable as an GPIO Output
-#define GPS_ENABLE 32
+#include "gps_control.h"
 
 
 // Base and end addresses of ULP coprocessor program binary blob
@@ -492,24 +490,6 @@ static void start_ulp_program(void)
     ESP_ERROR_CHECK(err);
 }
 
-static void gps_enable_init(void) 
-{
-    // Enable GPS
-    gpio_reset_pin(GPS_ENABLE);
-    /* Set the GPIO as a push/pull output */
-    gpio_set_direction(GPS_ENABLE, GPIO_MODE_OUTPUT);
-    gpio_set_level(GPS_ENABLE, 0);
-}
-
-static void gps_power_on(void)
-{
-    gpio_set_level(GPS_ENABLE, 1);
-}
-
-static void gps_power_off(void)
-{
-    gpio_set_level(GPS_ENABLE, 0);
-}
 
 
 /**
