@@ -55,7 +55,7 @@
 // Base and end addresses of ULP coprocessor program binary blob
 extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
 extern const uint8_t ulp_main_bin_end[]   asm("_binary_ulp_main_bin_end");
-
+ 
 /* This function is called once after power-on reset, to load ULP program into
  * RTC memory and configure the ADC.
  */
