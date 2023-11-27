@@ -52,75 +52,25 @@
 #include "gps_control.h"
 #include "espnow-lib.h"
 
+// Submersion Module GPIO Pin on ESP32-PICO-D4 (GPIO25)
+static const int ext_wakeup_pin_0 = 25;
 
-// Base and end addresses of ULP coprocessor program binary blob
-extern const uint8_t ulp_main_bin_start[] asm("_binary_ulp_main_bin_start");
-extern const uint8_t ulp_main_bin_end[]   asm("_binary_ulp_main_bin_end");
- 
-/* This function is called once after power-on reset, to load ULP program into
- * RTC memory and configure the ADC.
- */
-static void init_ulp_program(void);
+static const char *TAG = "Submersion Module";
 
-/* This function is called every time before going into deep sleep.
- * It starts the ULP program and resets measurement counter.
- */
-static void start_ulp_program(void);
-
-
-static void init_ulp_program(void)
+static void config_ext0_wakeup(void)
 {
-    esp_err_t err = ulp_load_binary(0, ulp_main_bin_start,
-            (ulp_main_bin_end - ulp_main_bin_start) / sizeof(uint32_t));
-    ESP_ERROR_CHECK(err);
+    ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(ext_wakeup_pin_0, 1));
+    // Configure pullup/downs via RTCIO to tie wakeup pins to inactive level during deepsleep.
+    // EXT0 resides in the same power domain (RTC_PERIPH) as the RTC IO pullup/downs.
+    // No need to keep that power domain explicitly, unlike EXT1.
+    ESP_ERROR_CHECK(rtc_gpio_pullup_dis(ext_wakeup_pin_0));
+    ESP_ERROR_CHECK(rtc_gpio_pulldown_en(ext_wakeup_pin_0));
 
-    //-------------ADC1 Init---------------//
-    adc_oneshot_unit_handle_t adc1_handle;
-    adc_oneshot_unit_init_cfg_t init_config1 = {
-        .unit_id = ADC_UNIT_1,
-        .ulp_mode = ADC_ULP_MODE_FSM,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
-
-    //-------------ADC1 Channel Config---------------//
-    // Note: when changing channel here, also change 'adc_channel' constant in adc.S
-    adc_oneshot_chan_cfg_t config = {
-        .bitwidth = ADC_BITWIDTH_DEFAULT,
-        .atten = ADC_ATTEN_DB_11,
-    };
-    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, ADC_CHANNEL_6, &config));
-
-    /* Set low and high thresholds: approx 1.35V - 1.75V */
-    ulp_low_thr = 0;
-    ulp_high_thr = 300;
-
-    rtc_gpio_init(25);
-    rtc_gpio_set_direction(25, RTC_GPIO_MODE_OUTPUT_ONLY);
-    rtc_gpio_set_level(25,0);
-
-    /* set ULP wake up period to 20 ms */
-    ulp_set_wakeup_period(0, 20000);
-
-    /* Disconnect GPIO12 and GPIO15 to remove current drain through 
-       pullup/pulldown resistors 
-       GPIO12 may be puled high to select flash voltage 
-    */
+    // Isolate GPIO12 pin from external circuits. This is needed for modules
+    // which have an external pull-up resistor on GPIO12 (such as ESP32-WROVER)
+    // to minimize current consumption.
     rtc_gpio_isolate(GPIO_NUM_12);
-    rtc_gpio_isolate(GPIO_NUM_15);
-    esp_deep_sleep_disable_rom_logging(); // suppress boot messages
 }
-
-static void start_ulp_program(void) 
-{
-    /* Reset sample counter */
-    ulp_sample_counter = 0;
-
-    /* Start the program */
-    esp_err_t err = ulp_run(&ulp_entry - RTC_SLOW_MEM);
-    ESP_ERROR_CHECK(err);
-}
-
-
 /**
  * @brief Main application entry point. Starts WiFi and ESP-NOW.
  * 
@@ -131,32 +81,25 @@ static void start_ulp_program(void)
  */
 void app_main(void)
 {
-
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
-    if (cause != ESP_SLEEP_WAKEUP_ULP) {
-        printf("Not ULP wakeup\n");
-        init_ulp_program();
-            // Initialize NVS
+    if (cause != ESP_SLEEP_WAKEUP_EXT0) {
+        printf("Regular Reset Wake\n");
+        // Initialize NVS
         esp_err_t ret = nvs_flash_init();
         if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
             ESP_ERROR_CHECK( nvs_flash_erase() );
             ret = nvs_flash_init();
         }
         ESP_ERROR_CHECK( ret );
+
+    } else {
+        printf("Submersion Wake Up\n");
         // Start WiFi before using ESP-NOW
         wifi_init();
         // Initialize ESP-NOW and begin task
         espnow_init();
-    } else {
-        printf("Deep sleep wakeup\n");
-        printf("ULP did %"PRIu32" measurements since last reset\n", ulp_sample_counter & UINT16_MAX);
-        printf("Thresholds:  low=%"PRIu32"  high=%"PRIu32"\n", ulp_low_thr, ulp_high_thr);
-        ulp_last_result &= UINT16_MAX;
-        printf("Value=%"PRIu32" was %s threshold\n", ulp_last_result,
-                ulp_last_result < ulp_low_thr ? "below" : "above");
     }
-    printf("Entering deep sleep\n\n");
-    start_ulp_program();
-    ESP_ERROR_CHECK( esp_sleep_enable_ulp_wakeup() );
+    // Enter Deep Sleep
+    config_ext0_wakeup();
     esp_deep_sleep_start();
 }
