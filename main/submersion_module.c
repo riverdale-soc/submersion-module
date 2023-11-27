@@ -33,6 +33,7 @@
 #include <assert.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "freertos/queue.h"
 #include "freertos/timers.h"
 #include "nvs_flash.h"
 #include "esp_random.h"
@@ -55,6 +56,55 @@ static const int ext_wakeup_pin_0 = 25;
 
 static const char *TAG = "Submersion Module";
 
+// define gps-payload struct that holds longitude and latitude
+typedef struct {
+    float longitude;
+    float latitude;
+} gps_payload_t;
+
+// Queue functions that hold GPS longitude and latitude data
+QueueHandle_t gps_queue;
+
+// Queue functions that hold GPS longitude and latitude data
+static void gps_queue_init(void)
+{
+    gps_queue = xQueueCreate(1, sizeof(gps_payload_t));
+    assert(gps_queue != NULL);
+}
+
+// Queue functions that hold GPS longitude and latitude data
+static void gps_queue_deinit(void)
+{
+    vQueueDelete(gps_queue);
+}
+
+// Queue functions that hold GPS longitude and latitude data
+static void gps_queue_send(gps_payload_t *payload)
+{
+    xQueueSend(gps_queue, payload, portMAX_DELAY);
+}
+
+// Queue functions that hold GPS longitude and latitude data
+static void gps_queue_receive(gps_payload_t *payload)
+{
+    xQueueReceive(gps_queue, payload, portMAX_DELAY);
+}
+
+// Queue functions that hold GPS longitude and latitude data
+static void gps_queue_reset(void)
+{
+    xQueueReset(gps_queue);
+}
+
+// Queue functions that hold GPS longitude and latitude data
+static void gps_queue_print(void)
+{
+    gps_payload_t payload;
+    gps_queue_receive(&payload);
+    ESP_LOGI(TAG, "GPS Longitude: %f", payload.longitude);
+    ESP_LOGI(TAG, "GPS Latitude: %f", payload.latitude);
+}
+
 /**
  * @brief GPS Event Handler
  *
@@ -69,15 +119,12 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
     switch (event_id) {
     case GPS_UPDATE:
         gps = (gps_t *)event_data;
-        /* print information parsed from GPS statements */
-        ESP_LOGI(TAG, "%d/%d/%d %d:%d:%d => \r\n"
-                 "\t\t\t\t\t\tlatitude   = %.05f°N\r\n"
-                 "\t\t\t\t\t\tlongitude = %.05f°E\r\n"
-                 "\t\t\t\t\t\taltitude   = %.02fm\r\n"
-                 "\t\t\t\t\t\tspeed      = %fm/s",
-                 gps->date.year + YEAR_BASE, gps->date.month, gps->date.day,
-                 gps->tim.hour + TIME_ZONE, gps->tim.minute, gps->tim.second,
-                 gps->latitude, gps->longitude, gps->altitude, gps->speed);
+        // construct payload struct
+        gps_payload_t payload;
+        payload.longitude = gps->longitude;
+        payload.latitude = gps->latitude;
+        // send payload struct to queue
+        gps_queue_send(&payload);
         break;
     case GPS_UNKNOWN:
         /* print unknown statements */
@@ -134,15 +181,15 @@ void app_main(void)
         ESP_ERROR_CHECK( ret );
 
     } else {
-
         // Turn on NEO-7M GPS module gated power supply
         gps_enable_init();
         gps_power_on();
+        // Initialize GPS parser library
         /* NMEA parser configuration */
         nmea_parser_config_t config = NMEA_PARSER_CONFIG_DEFAULT();
         /* init NMEA parser library */
         nmea_parser_handle_t nmea_hdl = nmea_parser_init(&config);
-        nmea_parser_add_handler(nmea_hdl, nmea_parser_gps_handler, NULL);
+        nmea_parser_add_handler(nmea_hdl, gps_event_handler, NULL);
         // Start WiFi before using ESP-NOW
         wifi_init();
         // Initialize ESP-NOW and begin task
