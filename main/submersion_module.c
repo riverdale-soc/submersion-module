@@ -92,6 +92,9 @@ void app_main(void)
 
     } else {
         printf("Submersion Wake Up\n");
+        // Turn on NEO-7M GPS module gated power supply
+        gps_enable_init();
+        gps_power_on();
         // Start WiFi before using ESP-NOW
         wifi_init();
         // Initialize ESP-NOW and begin task
