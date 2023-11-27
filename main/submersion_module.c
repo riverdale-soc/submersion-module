@@ -44,10 +44,8 @@
 #include "esp_mac.h"
 #include "esp_now.h"
 #include "esp_crc.h"
-#include "submersion_module.h"
 #include "gps_parser.h"
 #include "nmea_parser.h"
-#include "touch_sensor.h"
 #include "gps_control.h"
 #include "espnow-lib.h"
 

@@ -19,20 +19,20 @@
 
 #define ESPNOW_MAXDELAY 512
 
-static const char *TAG = "esp-now";
+const char *TAG = "esp-now";
 
-static QueueHandle_t s_espnow_queue;
+QueueHandle_t s_espnow_queue;
 
-static uint8_t s_broadcast_mac[ESP_NOW_ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-static uint16_t s_espnow_seq[ESPNOW_DATA_MAX] = { 0, 0 };
+uint8_t s_broadcast_mac[ESP_NOW_ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+uint16_t s_espnow_seq[ESPNOW_DATA_MAX] = { 0, 0 };
 
-static void espnow_deinit(espnow_send_param_t *send_param);
+void espnow_deinit(espnow_send_param_t *send_param);
 
 
 /**
  * Start WiFi before using ESP-NOW
 */
-static void wifi_init(void)
+void wifi_init(void)
 {
     // init network interface layer
     ESP_ERROR_CHECK(esp_netif_init());
@@ -62,7 +62,7 @@ static void wifi_init(void)
     * @arg mac_addr MAC address of the peer device to which the packet is sent
     * @arg status Status of the packet sent
 */
-static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
+void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
     espnow_event_t evt;
     espnow_event_send_cb_t *send_cb = &evt.info.send_cb;
@@ -84,7 +84,7 @@ static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status
 /**
  * @brief This function is called when a packet is received from the ESP-NOW protocol. (RX callback)
 */
-static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len)
+void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len)
 {
     espnow_event_t evt;
     espnow_event_recv_cb_t *recv_cb = &evt.info.recv_cb;
@@ -171,7 +171,7 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
  * 
  * @param pvParameter 
  */
-static void espnow_task(void *pvParameter)
+void espnow_task(void *pvParameter)
 {
     espnow_event_t evt;
     uint8_t recv_state = 0;
@@ -311,7 +311,7 @@ static void espnow_task(void *pvParameter)
     }
 }
 
-static esp_err_t espnow_init(void)
+esp_err_t espnow_init(void)
 {
     espnow_send_param_t *send_param;
 
@@ -381,7 +381,7 @@ static esp_err_t espnow_init(void)
     return ESP_OK;
 }
 
-static void espnow_deinit(espnow_send_param_t *send_param)
+void espnow_deinit(espnow_send_param_t *send_param)
 {
     free(send_param->buffer);
     free(send_param);

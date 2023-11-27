@@ -2,7 +2,7 @@
 #include "driver/gpio.h"
 #include "gps_control.h"
 
-static void gps_enable_init(void) 
+void gps_enable_init(void) 
 {
     // Enable GPS
     gpio_reset_pin(GPS_ENABLE);
@@ -11,12 +11,12 @@ static void gps_enable_init(void)
     gpio_set_level(GPS_ENABLE, 0);
 }
 
-static void gps_power_on(void)
+void gps_power_on(void)
 {
     gpio_set_level(GPS_ENABLE, 1);
 }
 
-static void gps_power_off(void)
+void gps_power_off(void)
 {
     gpio_set_level(GPS_ENABLE, 0);
 }

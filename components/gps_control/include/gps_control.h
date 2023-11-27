@@ -12,18 +12,18 @@
  * @brief  Initialize GPS Enable Pin
  * 
  */
-static void gps_enable_init(void);
+void gps_enable_init(void);
 
 /**
  * @brief  Power on GPS
  * 
  */
-static void gps_power_on(void);
+void gps_power_on(void);
 
 /**
  * @brief  Power off GPS
  * 
  */
-static void gps_power_off(void);
+void gps_power_off(void);
 
 #endif /* GPS_CONTROL_H */

@@ -109,21 +109,21 @@ typedef struct {
 } espnow_send_param_t;
 
 /* Function Declarations */
-static void espnow_deinit(espnow_send_param_t *send_param);
+void espnow_deinit(espnow_send_param_t *send_param);
 
-static void wifi_init(void);
+void wifi_init(void);
 
-static void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
+void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status);
 
-static void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len);
+void espnow_recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *data, int len);
 
 int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t *seq, int *magic);
 
 void espnow_data_prepare(espnow_send_param_t *send_param);
 
-static void espnow_task(void *pvParameter);
+void espnow_task(void *pvParameter);
 
-static esp_err_t espnow_init(void);
+esp_err_t espnow_init(void);
 
 
 #endif /* ESPNOW_LIB_H */

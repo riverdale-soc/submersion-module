@@ -1,6 +1,7 @@
 {
     "idf.adapterTargetName": "esp32",
     "files.associations": {
-        "lwgps_opt.h": "c"
+        "lwgps_opt.h": "c",
+        "gps_control.h": "c"
     }
 }

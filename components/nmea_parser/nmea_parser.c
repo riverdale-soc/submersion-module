@@ -27,7 +27,7 @@
  */
 ESP_EVENT_DEFINE_BASE(ESP_NMEA_EVENT);
 
-static const char *GPS_TAG = "nmea_parser";
+const char *GPS_TAG = "nmea_parser";
 
 /**
  * @brief GPS parser library runtime structure
@@ -58,7 +58,7 @@ typedef struct {
  * @param esp_gps esp_gps_t type object
  * @return float Latitude or Longitude value (unit: degree)
  */
-static float parse_lat_long(esp_gps_t *esp_gps)
+float parse_lat_long(esp_gps_t *esp_gps)
 {
     float ll = strtof(esp_gps->item_str, NULL);
     int deg = ((int)ll) / 100;
@@ -73,7 +73,7 @@ static float parse_lat_long(esp_gps_t *esp_gps)
  * @param digit_char numeric character
  * @return uint8_t result of converting
  */
-static inline uint8_t convert_two_digit2number(const char *digit_char)
+inline uint8_t convert_two_digit2number(const char *digit_char)
 {
     return 10 * (digit_char[0] - '0') + (digit_char[1] - '0');
 }
@@ -83,7 +83,7 @@ static inline uint8_t convert_two_digit2number(const char *digit_char)
  *
  * @param esp_gps esp_gps_t type object
  */
-static void parse_utc_time(esp_gps_t *esp_gps)
+void parse_utc_time(esp_gps_t *esp_gps)
 {
     esp_gps->parent.tim.hour = convert_two_digit2number(esp_gps->item_str + 0);
     esp_gps->parent.tim.minute = convert_two_digit2number(esp_gps->item_str + 2);
@@ -105,7 +105,7 @@ static void parse_utc_time(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-static void parse_gga(esp_gps_t *esp_gps)
+void parse_gga(esp_gps_t *esp_gps)
 {
     /* Process GGA statement */
     switch (esp_gps->item_num) {
@@ -155,7 +155,7 @@ static void parse_gga(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-static void parse_gsa(esp_gps_t *esp_gps)
+void parse_gsa(esp_gps_t *esp_gps)
 {
     /* Process GSA statement */
     switch (esp_gps->item_num) {
@@ -187,7 +187,7 @@ static void parse_gsa(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-static void parse_gsv(esp_gps_t *esp_gps)
+void parse_gsv(esp_gps_t *esp_gps)
 {
     /* Process GSV statement */
     switch (esp_gps->item_num) {
@@ -237,7 +237,7 @@ static void parse_gsv(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-static void parse_rmc(esp_gps_t *esp_gps)
+void parse_rmc(esp_gps_t *esp_gps)
 {
     /* Process GPRMC statement */
     switch (esp_gps->item_num) {
@@ -355,7 +355,7 @@ static void parse_vtg(esp_gps_t *esp_gps)
  * @param esp_gps esp_gps_t type object
  * @return esp_err_t ESP_OK on success, ESP_FAIL on error
  */
-static esp_err_t parse_item(esp_gps_t *esp_gps)
+esp_err_t parse_item(esp_gps_t *esp_gps)
 {
     esp_err_t err = ESP_OK;
     /* start of a statement */
@@ -445,7 +445,7 @@ out:
  * @param len number of bytes to decode
  * @return esp_err_t ESP_OK on success, ESP_FAIL on error
  */
-static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
+esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
 {
     const uint8_t *d = esp_gps->buffer;
     while (*d) {
@@ -564,7 +564,7 @@ static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
  *
  * @param esp_gps esp_gps_t type object
  */
-static void esp_handle_uart_pattern(esp_gps_t *esp_gps)
+void esp_handle_uart_pattern(esp_gps_t *esp_gps)
 {
     int pos = uart_pattern_pop_pos(esp_gps->uart_port);
     if (pos != -1) {
@@ -587,7 +587,7 @@ static void esp_handle_uart_pattern(esp_gps_t *esp_gps)
  *
  * @param arg argument
  */
-static void nmea_parser_task_entry(void *arg)
+void nmea_parser_task_entry(void *arg)
 {
     esp_gps_t *esp_gps = (esp_gps_t *)arg;
     uart_event_t event;
