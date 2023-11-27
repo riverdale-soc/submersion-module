@@ -99,7 +99,7 @@ void gps_queue_send(gps_payload_t *payload)
 // Queue functions that hold GPS longitude and latitude data
 void gps_queue_receive(gps_payload_t *payload)
 {
-    xQueueReceive(gps_queue, payload, portMAX_DELAY);
+    xQueueReceive(gps_queue, payload, 0);
 }
 
 // Queue functions that hold GPS longitude and latitude data
@@ -248,6 +248,11 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     // Read from GPS queue and fill payload with GPS data
     gps_payload_t payload;
     gps_queue_receive(&payload);
+
+    // Fill payload with GPS data
+    memcpy(buf->payload + 1, &payload, sizeof(gps_payload_t));
+    // Fill remaining bytes with 0xFF
+    memset(buf->payload + 1 + sizeof(gps_payload_t), 0xFF, sizeof(buf->payload) - sizeof(gps_payload_t) - 1);
 
     /* Fill all remaining bytes after the data with random values */
 
