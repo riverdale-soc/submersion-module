@@ -136,15 +136,6 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
 }
 
 
-
-
-
-
-
-
-
-
-
 static void config_ext0_wakeup(void)
 {
     ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(ext_wakeup_pin_0, 1));
@@ -186,6 +177,7 @@ void app_main(void)
         gps_power_on();
         // Initialize GPS parser library
         /* NMEA parser configuration */
+        gps_queue_init();
         nmea_parser_config_t config = NMEA_PARSER_CONFIG_DEFAULT();
         /* init NMEA parser library */
         nmea_parser_handle_t nmea_hdl = nmea_parser_init(&config);
