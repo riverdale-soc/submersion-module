@@ -1,12 +1,16 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- |
+| Supported Targets | ESP32 | 
+| ----------------- | ----- |
 
 # Submersion Module
-* Start WiFi.
-* Initialize ESPNOW.
-* Register ESPNOW sending or receiving callback function.
-* Add ESPNOW peer information.
-* Send and receive ESPNOW data.
+* Check Wake Up Event
+  * If Wake up From EXT0 (GPIO25 connected to Submersion Reed Switch)
+  * Turn on GPIO 32 (GPS Enable To Gate 3V power supply to NEO-7M GPS)
+  * Start NMEA parser UART handler
+  * Start WiFi.
+  * Initialize ESPNOW.
+  * Register ESPNOW sending or receiving callback function.
+  * Add ESPNOW peer information.
+  * Send MOB Wake Packets and append longitude and latitude data to packet fields opportunistically
 
 
 ![Software State Machine](docs/fsm.png)
