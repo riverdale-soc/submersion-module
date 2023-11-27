@@ -535,9 +535,9 @@ static void config_ext0_wakeup(void)
  * @brief Main application entry point. Starts WiFi and ESP-NOW.
  * 
  * Submersion Module State Machine
- *  1: Check wake up cause
- *      1a: If wake up cause is not ULP, initialize ULP program and load it into RTC memory, enter deep sleep
- *      1b: If wake up cause is ULP, initialize WiFi and ESP-NOW, construct and send MOB payload, start GPS event handler 
+ * Check if water sensor is submerged in water
+ * If submerged, power on GPS and send GPS data over ESP-NOW 
+ * If not submerged, go to sleep
  */
 void app_main(void)
 {
