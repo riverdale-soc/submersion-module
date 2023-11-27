@@ -28,8 +28,6 @@
 #include "driver/gpio.h"
 #include "driver/rtc_io.h"
 #include "driver/dac.h"
-#include "esp32/ulp.h"
-#include "ulp_main.h"
 #include "esp_adc/adc_oneshot.h"
 #include <string.h>
 #include <assert.h>
