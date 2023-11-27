@@ -3,7 +3,15 @@
 
 #include <stdio.h>
 #include "driver/gpio.h"    
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 #include "gps_control.h"
+
+// define gps-payload struct that holds longitude and latitude
+typedef struct {
+    float longitude;
+    float latitude;
+} gps_payload_t;
 
 // Allocate GPIO32 - GPS Enable as an GPIO Output
 #define GPS_ENABLE 32
@@ -25,5 +33,6 @@ void gps_power_on(void);
  * 
  */
 void gps_power_off(void);
+
 
 #endif /* GPS_CONTROL_H */

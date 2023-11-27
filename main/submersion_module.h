@@ -1,17 +1,6 @@
-/* ESPNOW Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-
-#ifndef ESPNOW_LIB_H
-#define ESPNOW_LIB_H
-
+#ifndef SUBMERSION_MODULE_H
+#define SUBMERSION_MODULE_H
 #include <stdio.h>
-#include "espnow-lib.h"
 #include "esp_event.h"
 #include "esp_netif.h"
 #include "esp_wifi.h"
@@ -121,9 +110,9 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
 
 void espnow_data_prepare(espnow_send_param_t *send_param);
 
-void espnow_task(void *pvParameter);
-
 esp_err_t espnow_init(void);
+
+
 
 
 #endif /* ESPNOW_LIB_H */
