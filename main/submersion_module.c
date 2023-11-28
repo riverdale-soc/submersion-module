@@ -566,13 +566,12 @@ void app_main(void)
         // Enter Deep Sleep
         config_ext0_wakeup();
         esp_deep_sleep_start();
-
     } else {
         ESP_LOGI(TAG, "Wake up from GPIO %d\n", ext_wakeup_pin_0);
         // Turn on NEO-7M GPS module gated power supply
         ESP_LOGI(TAG, "Powering on GPS");
         gps_enable_init();
-        gps_power_on();
+        gps_power_on(); // Turn on GPIO32 to power on GPS (Gate to IRML2502)
         // Initialize GPS parser library
         /* NMEA parser configuration */
         gps_queue_init();
@@ -580,13 +579,13 @@ void app_main(void)
         nmea_parser_config_t config = NMEA_PARSER_CONFIG_DEFAULT();
         /* init NMEA parser library */
         nmea_parser_handle_t nmea_hdl = nmea_parser_init(&config);
-        nmea_parser_add_handler(nmea_hdl, gps_event_handler, NULL);
+        ESP_ERROR_CHECK(nmea_parser_add_handler(nmea_hdl, gps_event_handler, NULL));
         // Start WiFi before using ESP-NOW
         ESP_LOGI(TAG, "Initializing WiFi");
         wifi_init();
         // Initialize ESP-NOW and begin task
         ESP_LOGI(TAG, "Initializing ESP-NOW");
-        espnow_init();   
+        ESP_ERROR_CHECK(espnow_init());   
     }
     // Base task idle loop
     while (1) {
