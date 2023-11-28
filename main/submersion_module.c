@@ -248,6 +248,9 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     // Read from GPS queue and fill payload with GPS data
     gps_payload_t payload;
     gps_queue_receive(&payload);
+    // Print GPS data to console
+    ESP_LOGI(TAG, "Longitude TX: %f", payload.longitude);
+    ESP_LOGI(TAG, "Latitude  TX: %f", payload.latitude);
 
     // Fill payload with GPS data
     memcpy(buf->payload + 1, &payload, sizeof(gps_payload_t));
@@ -504,6 +507,10 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
         gps_payload_t payload;
         payload.longitude = gps->longitude;
         payload.latitude = gps->latitude;
+
+        // Print GPS data to console
+        ESP_LOGI(TAG, "Longitude RX: %f", payload.longitude);
+        ESP_LOGI(TAG, "Latitude RX: %f", payload.latitude);
         // send payload struct to queue
         gps_queue_send(&payload);
         break;
@@ -517,6 +524,10 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
 }
 
 
+/**
+ * @brief Enable Wakeup from GPIO 25 during Deep Sleep. 
+ * Configure as internal floating, since using external pull up resistor.
+ */
 static void config_ext0_wakeup(void)
 {
     ESP_ERROR_CHECK(esp_sleep_enable_ext0_wakeup(ext_wakeup_pin_0, 1));
@@ -524,7 +535,7 @@ static void config_ext0_wakeup(void)
     // EXT0 resides in the same power domain (RTC_PERIPH) as the RTC IO pullup/downs.
     // No need to keep that power domain explicitly, unlike EXT1.
     ESP_ERROR_CHECK(rtc_gpio_pullup_dis(ext_wakeup_pin_0));
-    ESP_ERROR_CHECK(rtc_gpio_pulldown_en(ext_wakeup_pin_0));
+    ESP_ERROR_CHECK(rtc_gpio_pulldown_dis(ext_wakeup_pin_0));
 
     // Isolate GPIO12 pin from external circuits. This is needed for modules
     // which have an external pull-up resistor on GPIO12 (such as ESP32-WROVER)
