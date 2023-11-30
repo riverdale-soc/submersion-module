@@ -47,8 +47,12 @@
 #include "nmea_parser.h"
 #include "gps_control.h"
 #include "submersion_module.h"
+#include "esp_timer.h"
 
 QueueHandle_t s_espnow_queue;
+static esp_timer_handle_t timer;
+static int64_t start_time;
+
 
 
 uint8_t s_broadcast_mac[ESP_NOW_ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
@@ -80,7 +84,7 @@ void gps_queue_reset(void);
 // Queue functions that hold GPS longitude and latitude data
 void gps_queue_init(void)
 {
-    gps_queue = xQueueCreate(1, sizeof(gps_payload_t));
+    gps_queue = xQueueCreate(3, sizeof(gps_payload_t));
     assert(gps_queue != NULL);
 }
 
@@ -93,13 +97,29 @@ void gps_queue_deinit(void)
 // Queue functions that hold GPS longitude and latitude data
 void gps_queue_send(gps_payload_t *payload)
 {
+    // Check if full
+    if (uxQueueMessagesWaiting(gps_queue) == 1) {
+        // Reset queue
+        ESP_LOGI(TAG, "Queue Full");
+        gps_queue_reset();
+    }
+    
     xQueueSend(gps_queue, payload, portMAX_DELAY);
 }
 
 // Queue functions that hold GPS longitude and latitude data
 void gps_queue_receive(gps_payload_t *payload)
 {
-    xQueueReceive(gps_queue, payload, 0);
+    // Check if empty
+    if (uxQueueMessagesWaiting(gps_queue) == 0) {
+        // Fill payload with 0xFF
+        ESP_LOGI(TAG, "Queue Empty");
+        memset(payload, 0xFF, sizeof(gps_payload_t));
+        return;
+    }
+    else {
+        xQueueReceive(gps_queue, payload, portMAX_DELAY);
+    }
 }
 
 // Queue functions that hold GPS longitude and latitude data
@@ -147,6 +167,7 @@ void espnow_send_cb(const uint8_t *mac_addr, esp_now_send_status_t status)
 {
     espnow_event_t evt;
     espnow_event_send_cb_t *send_cb = &evt.info.send_cb;
+    ESP_LOGI(TAG, "ESP NOW Callback");
 
     if (mac_addr == NULL) {
         ESP_LOGE(TAG, "Send cb arg error");
@@ -234,7 +255,7 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
 void espnow_data_prepare(espnow_send_param_t *send_param)
 {
     espnow_data_t *buf = (espnow_data_t *)send_param->buffer;
-
+    
     assert(send_param->len >= sizeof(espnow_data_t));
 
     buf->type = IS_BROADCAST_ADDR(send_param->dest_mac) ? ESPNOW_DATA_BROADCAST : ESPNOW_DATA_UNICAST;
@@ -244,23 +265,28 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     buf->magic = send_param->magic;
 
     // Fill first 4 bits of payload with 00 11 
-    buf->payload[0] = 0x03;
+    // buf->payload[0] = 0x03;
     // Read from GPS queue and fill payload with GPS data
-    gps_payload_t payload;
-    gps_queue_receive(&payload);
+    // gps_payload_t payload;
+    // debug print
+    //ESP_LOGI(TAG, "Got here before queue receive in data prepare");
+    //gps_queue_receive(&payload);
+    //ESP_LOGI(TAG, "Got here after queue receive in data prepare");
     // Print GPS data to console
-    ESP_LOGI(TAG, "Longitude TX: %f", payload.longitude);
-    ESP_LOGI(TAG, "Latitude  TX: %f", payload.latitude);
+    //ESP_LOGI(TAG, "Longitude TX: %f", payload.longitude);
+    //ESP_LOGI(TAG, "Latitude  TX: %f", payload.latitude);
 
+    //ESP_LOGI(TAG, "Got here data prepare memset");
     // Fill payload with GPS data
-    memcpy(buf->payload + 1, &payload, sizeof(gps_payload_t));
+    //memcpy(buf->payload + 1, &payload, sizeof(gps_payload_t));
     // Fill remaining bytes with 0xFF
-    memset(buf->payload + 1 + sizeof(gps_payload_t), 0xFF, sizeof(buf->payload) - sizeof(gps_payload_t) - 1);
-
+    //memset(buf->payload + 1 + sizeof(gps_payload_t), 0xFF, sizeof(buf->payload) - sizeof(gps_payload_t) - 1);
+    //ESP_LOGI(TAG, "Got here after data prepare memset");
     /* Fill all remaining bytes after the data with random values */
-
+    esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
     // esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
     buf->crc = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, send_param->len);
+    ESP_LOGI(TAG, "Data prepare ok");
 }
 
 
@@ -297,16 +323,19 @@ void espnow_task(void *pvParameter)
         espnow_deinit(send_param);
         vTaskDelete(NULL);
     }
-
+    ESP_LOGI(TAG, "Checking espnow queue");
     // Wait for Send or Receive event in espnow_queue indefinitely
     while (xQueueReceive(s_espnow_queue, &evt, portMAX_DELAY) == pdTRUE) {
         switch (evt.id) {
             // Send event comes from the callback function of sending ESPNOW data
             case ESPNOW_SEND_CB:
             {
+                
+                ESP_LOGI(TAG, "Starting ESPNOW Send");
                 espnow_event_send_cb_t *send_cb = &evt.info.send_cb;
+                ESP_LOGI(TAG, "got cb");
                 is_broadcast = IS_BROADCAST_ADDR(send_cb->mac_addr);
-
+                ESP_LOGI(TAG, "hi");
                 ESP_LOGD(TAG, "Send data to "MACSTR", status1: %d", MAC2STR(send_cb->mac_addr), send_cb->status);
 
                 if (is_broadcast && (send_param->broadcast == false)) {
@@ -326,18 +355,24 @@ void espnow_task(void *pvParameter)
                 if (send_param->delay > 0) {
                     vTaskDelay(send_param->delay/portTICK_PERIOD_MS);
                 }
-
+                ESP_LOGI(TAG, "Finished Send Delay");
                 ESP_LOGI(TAG, "send data to "MACSTR"", MAC2STR(send_cb->mac_addr));
 
                 memcpy(send_param->dest_mac, send_cb->mac_addr, ESP_NOW_ETH_ALEN);
                 espnow_data_prepare(send_param);
-
+                
                 /* Send the next data after the previous data is sent. */
                 if (esp_now_send(send_param->dest_mac, send_param->buffer, send_param->len) != ESP_OK) {
                     ESP_LOGE(TAG, "Send error");
                     espnow_deinit(send_param);
                     vTaskDelete(NULL);
                 }
+                ESP_LOGI(TAG, "Finished Send");
+                int64_t end_time = esp_timer_get_time();
+
+                // Calculate the elapsed time
+                int64_t elapsed_time = end_time - start_time;
+                printf("Elapsed time: %lld us\n", elapsed_time);
                 break;
             }
             case ESPNOW_RECV_CB:
@@ -499,6 +534,7 @@ esp_err_t espnow_init(void)
  */
 static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
+    ESP_LOGI(TAG, "GPS Handler");
     gps_t *gps = NULL;
     switch (event_id) {
     case GPS_UPDATE:
@@ -534,7 +570,8 @@ static void config_ext0_wakeup(void)
     // Configure pullup/downs via RTCIO to tie wakeup pins to inactive level during deepsleep.
     // EXT0 resides in the same power domain (RTC_PERIPH) as the RTC IO pullup/downs.
     // No need to keep that power domain explicitly, unlike EXT1.
-    ESP_ERROR_CHECK(rtc_gpio_pullup_dis(ext_wakeup_pin_0));
+    ESP_ERROR_CHECK(rtc_gpio_pullup_en(ext_wakeup_pin_0));
+    // ESP_ERROR_CHECK(rtc_gpio_pullup_dis(ext_wakeup_pin_0));
     ESP_ERROR_CHECK(rtc_gpio_pulldown_dis(ext_wakeup_pin_0));
 
     // Isolate GPIO12 pin from external circuits. This is needed for modules
@@ -542,6 +579,7 @@ static void config_ext0_wakeup(void)
     // to minimize current consumption.
     rtc_gpio_isolate(GPIO_NUM_12);
 }
+
 /**
  * @brief Main application entry point. Starts WiFi and ESP-NOW.
  * 
@@ -552,6 +590,7 @@ static void config_ext0_wakeup(void)
  */
 void app_main(void)
 {
+    esp_log_level_set("*", ESP_LOG_INFO);
     esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
     if (cause != ESP_SLEEP_WAKEUP_EXT0) {
         printf("Regular Reset Wake\n");
@@ -567,25 +606,41 @@ void app_main(void)
         config_ext0_wakeup();
         esp_deep_sleep_start();
     } else {
-        ESP_LOGI(TAG, "Wake up from GPIO %d\n", ext_wakeup_pin_0);
+
+        start_time = esp_timer_get_time();
+        // ESP_LOGI(TAG, "Wake up from GPIO %d\n", ext_wakeup_pin_0);
+        esp_err_t ret = nvs_flash_init();
+        if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+            ESP_ERROR_CHECK( nvs_flash_erase() );
+            ret = nvs_flash_init();
+        }
+        ESP_ERROR_CHECK( ret );
         // Turn on NEO-7M GPS module gated power supply
-        ESP_LOGI(TAG, "Powering on GPS");
+        // ESP_LOGI(TAG, "Powering on GPS");
         gps_enable_init();
         gps_power_on(); // Turn on GPIO32 to power on GPS (Gate to IRML2502)
         // Initialize GPS parser library
         /* NMEA parser configuration */
         gps_queue_init();
-        ESP_LOGI(TAG, "Initializing GPS Event Handler");
+        // ESP_LOGI(TAG, "Initializing GPS Event Handler");
         nmea_parser_config_t config = NMEA_PARSER_CONFIG_DEFAULT();
         /* init NMEA parser library */
         nmea_parser_handle_t nmea_hdl = nmea_parser_init(&config);
         ESP_ERROR_CHECK(nmea_parser_add_handler(nmea_hdl, gps_event_handler, NULL));
         // Start WiFi before using ESP-NOW
-        ESP_LOGI(TAG, "Initializing WiFi");
+        // ESP_LOGI(TAG, "Initializing WiFi");
         wifi_init();
         // Initialize ESP-NOW and begin task
-        ESP_LOGI(TAG, "Initializing ESP-NOW");
+        //ESP_LOGI(TAG, "Initializing ESP-NOW");
         ESP_ERROR_CHECK(espnow_init());   
+        // Record the end time
+        int64_t end_time = esp_timer_get_time();
+
+        // Calculate the elapsed time
+        int64_t elapsed_time = end_time - start_time;
+        printf("Elapsed time: %lld us\n", elapsed_time);
+
+        
     }
     // Base task idle loop
     while (1) {

@@ -1,9 +1,3 @@
-/*
- * SPDX-FileCopyrightText: 2015-2022 Espressif Systems (Shanghai) CO LTD
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -27,7 +21,7 @@
  */
 ESP_EVENT_DEFINE_BASE(ESP_NMEA_EVENT);
 
-const char *GPS_TAG = "nmea_parser";
+static const char *GPS_TAG = "nmea_parser";
 
 /**
  * @brief GPS parser library runtime structure
@@ -58,7 +52,7 @@ typedef struct {
  * @param esp_gps esp_gps_t type object
  * @return float Latitude or Longitude value (unit: degree)
  */
-float parse_lat_long(esp_gps_t *esp_gps)
+static float parse_lat_long(esp_gps_t *esp_gps)
 {
     float ll = strtof(esp_gps->item_str, NULL);
     int deg = ((int)ll) / 100;
@@ -73,7 +67,7 @@ float parse_lat_long(esp_gps_t *esp_gps)
  * @param digit_char numeric character
  * @return uint8_t result of converting
  */
-inline uint8_t convert_two_digit2number(const char *digit_char)
+static inline uint8_t convert_two_digit2number(const char *digit_char)
 {
     return 10 * (digit_char[0] - '0') + (digit_char[1] - '0');
 }
@@ -83,7 +77,7 @@ inline uint8_t convert_two_digit2number(const char *digit_char)
  *
  * @param esp_gps esp_gps_t type object
  */
-void parse_utc_time(esp_gps_t *esp_gps)
+static void parse_utc_time(esp_gps_t *esp_gps)
 {
     esp_gps->parent.tim.hour = convert_two_digit2number(esp_gps->item_str + 0);
     esp_gps->parent.tim.minute = convert_two_digit2number(esp_gps->item_str + 2);
@@ -105,7 +99,7 @@ void parse_utc_time(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-void parse_gga(esp_gps_t *esp_gps)
+static void parse_gga(esp_gps_t *esp_gps)
 {
     /* Process GGA statement */
     switch (esp_gps->item_num) {
@@ -155,7 +149,7 @@ void parse_gga(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-void parse_gsa(esp_gps_t *esp_gps)
+static void parse_gsa(esp_gps_t *esp_gps)
 {
     /* Process GSA statement */
     switch (esp_gps->item_num) {
@@ -187,7 +181,7 @@ void parse_gsa(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-void parse_gsv(esp_gps_t *esp_gps)
+static void parse_gsv(esp_gps_t *esp_gps)
 {
     /* Process GSV statement */
     switch (esp_gps->item_num) {
@@ -237,7 +231,7 @@ void parse_gsv(esp_gps_t *esp_gps)
  *
  * @param esp_gps esp_gps_t type object
  */
-void parse_rmc(esp_gps_t *esp_gps)
+static void parse_rmc(esp_gps_t *esp_gps)
 {
     /* Process GPRMC statement */
     switch (esp_gps->item_num) {
@@ -355,7 +349,7 @@ static void parse_vtg(esp_gps_t *esp_gps)
  * @param esp_gps esp_gps_t type object
  * @return esp_err_t ESP_OK on success, ESP_FAIL on error
  */
-esp_err_t parse_item(esp_gps_t *esp_gps)
+static esp_err_t parse_item(esp_gps_t *esp_gps)
 {
     esp_err_t err = ESP_OK;
     /* start of a statement */
@@ -445,7 +439,7 @@ out:
  * @param len number of bytes to decode
  * @return esp_err_t ESP_OK on success, ESP_FAIL on error
  */
-esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
+static esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
 {
     const uint8_t *d = esp_gps->buffer;
     while (*d) {
@@ -564,7 +558,7 @@ esp_err_t gps_decode(esp_gps_t *esp_gps, size_t len)
  *
  * @param esp_gps esp_gps_t type object
  */
-void esp_handle_uart_pattern(esp_gps_t *esp_gps)
+static void esp_handle_uart_pattern(esp_gps_t *esp_gps)
 {
     int pos = uart_pattern_pop_pos(esp_gps->uart_port);
     if (pos != -1) {
@@ -587,7 +581,7 @@ void esp_handle_uart_pattern(esp_gps_t *esp_gps)
  *
  * @param arg argument
  */
-void nmea_parser_task_entry(void *arg)
+static void nmea_parser_task_entry(void *arg)
 {
     esp_gps_t *esp_gps = (esp_gps_t *)arg;
     uart_event_t event;
@@ -705,15 +699,15 @@ nmea_parser_handle_t nmea_parser_init(const nmea_parser_config_t *config)
         ESP_LOGE(GPS_TAG, "create event loop faild");
         goto err_eloop;
     }
-    /* Create NMEA Parser task running on core 1 */
-    BaseType_t err = xTaskCreatePinnedToCore(
+    /* Create NMEA Parser task */
+    BaseType_t err = xTaskCreate(
                          nmea_parser_task_entry,
                          "nmea_parser",
                          CONFIG_NMEA_PARSER_TASK_STACK_SIZE,
                          esp_gps,
-                         CONFIG_NMEA_PARSER_TASK_PRIORITY,
-                         &esp_gps->tsk_hdl,
-                         1);
+                         // CONFIG_NMEA_PARSER_TASK_PRIORITY,
+                         1, 
+                         &esp_gps->tsk_hdl);
     if (err != pdTRUE) {
         ESP_LOGE(GPS_TAG, "create NMEA Parser task failed");
         goto err_task_create;
