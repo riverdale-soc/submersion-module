@@ -100,7 +100,6 @@ void gps_queue_send(gps_payload_t *payload)
     // Check if full
     if (uxQueueMessagesWaiting(gps_queue) == 1) {
         // Reset queue
-        ESP_LOGI(TAG, "Queue Full");
         gps_queue_reset();
     }
     
@@ -113,7 +112,6 @@ void gps_queue_receive(gps_payload_t *payload)
     // Check if empty
     if (uxQueueMessagesWaiting(gps_queue) == 0) {
         // Fill payload with 0xFF
-        ESP_LOGI(TAG, "Queue Empty");
         memset(payload, 0xFF, sizeof(gps_payload_t));
         return;
     }
@@ -286,7 +284,6 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
     // esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
     buf->crc = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, send_param->len);
-    ESP_LOGI(TAG, "Data prepare ok");
 }
 
 
@@ -323,7 +320,6 @@ void espnow_task(void *pvParameter)
         espnow_deinit(send_param);
         vTaskDelete(NULL);
     }
-    ESP_LOGI(TAG, "Checking espnow queue");
     // Wait for Send or Receive event in espnow_queue indefinitely
     while (xQueueReceive(s_espnow_queue, &evt, portMAX_DELAY) == pdTRUE) {
         switch (evt.id) {
@@ -331,11 +327,8 @@ void espnow_task(void *pvParameter)
             case ESPNOW_SEND_CB:
             {
                 
-                ESP_LOGI(TAG, "Starting ESPNOW Send");
                 espnow_event_send_cb_t *send_cb = &evt.info.send_cb;
-                ESP_LOGI(TAG, "got cb");
                 is_broadcast = IS_BROADCAST_ADDR(send_cb->mac_addr);
-                ESP_LOGI(TAG, "hi");
                 ESP_LOGD(TAG, "Send data to "MACSTR", status1: %d", MAC2STR(send_cb->mac_addr), send_cb->status);
 
                 if (is_broadcast && (send_param->broadcast == false)) {
@@ -345,7 +338,6 @@ void espnow_task(void *pvParameter)
                 if (!is_broadcast) {
                     send_param->count--;
                     if (send_param->count == 0) {
-                        ESP_LOGI(TAG, "Send done");
                         espnow_deinit(send_param);
                         vTaskDelete(NULL);
                     }
@@ -355,7 +347,6 @@ void espnow_task(void *pvParameter)
                 if (send_param->delay > 0) {
                     vTaskDelay(send_param->delay/portTICK_PERIOD_MS);
                 }
-                ESP_LOGI(TAG, "Finished Send Delay");
                 ESP_LOGI(TAG, "send data to "MACSTR"", MAC2STR(send_cb->mac_addr));
 
                 memcpy(send_param->dest_mac, send_cb->mac_addr, ESP_NOW_ETH_ALEN);
@@ -367,12 +358,6 @@ void espnow_task(void *pvParameter)
                     espnow_deinit(send_param);
                     vTaskDelete(NULL);
                 }
-                ESP_LOGI(TAG, "Finished Send");
-                int64_t end_time = esp_timer_get_time();
-
-                // Calculate the elapsed time
-                int64_t elapsed_time = end_time - start_time;
-                printf("Elapsed time: %lld us\n", elapsed_time);
                 break;
             }
             case ESPNOW_RECV_CB:
@@ -545,8 +530,8 @@ static void gps_event_handler(void *event_handler_arg, esp_event_base_t event_ba
         payload.latitude = gps->latitude;
 
         // Print GPS data to console
-        ESP_LOGI(TAG, "Longitude RX: %f", payload.longitude);
-        ESP_LOGI(TAG, "Latitude RX: %f", payload.latitude);
+        ESP_LOGI(TAG, "Longitude RX Sent: %f", payload.longitude);
+        ESP_LOGI(TAG, "Latitude RX Sent: %f", payload.latitude);
         // send payload struct to queue
         gps_queue_send(&payload);
         break;
@@ -634,13 +619,6 @@ void app_main(void)
         //ESP_LOGI(TAG, "Initializing ESP-NOW");
         ESP_ERROR_CHECK(espnow_init());   
         // Record the end time
-        int64_t end_time = esp_timer_get_time();
-
-        // Calculate the elapsed time
-        int64_t elapsed_time = end_time - start_time;
-        printf("Elapsed time: %lld us\n", elapsed_time);
-
-        
     }
     // Base task idle loop
     while (1) {
