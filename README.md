@@ -39,19 +39,27 @@ to make ESPNOW data more safe and more reliable.
 ```
 idf.py menuconfig
 ```
-
-* Set WiFi mode (station or SoftAP) under Example Configuration Options.
-* Set ESPNOW primary master key under Example Configuration Options.
+#### ESP-NOW Lib Configuration
+* Set WiFi mode (station or SoftAP).
+* Set ESPNOW primary master key.
   This parameter must be set to the same value for sending and recving devices.
-* Set ESPNOW local master key under Example Configuration Options.
+* Set ESPNOW local master key.
   This parameter must be set to the same value for sending and recving devices.
-* Set Channel under Example Configuration Options.
+* Set Channel.
   The sending device and the recving device must be on the same channel.
-* Set Send count and Send delay under Example Configuration Options.
-* Set Send len under Example Configuration Options.
+* Set Send count and Send delay.
+* Set Send len.
 * Set Enable Long Range Options.
   When this parameter is enabled, the ESP32 device will send data at the PHY rate of 512Kbps or 256Kbps
   then the data can be transmitted over long range between two ESP32 devices.
+#### NMEA UART Parser Configuration
+* Set NMEA UART RX pin
+* Set Nmea parser ring buffer size.
+* Set NMEA parser task stack size.
+* Set NMEA task stack priority
+* Select NMEA statement support [GGA, GSA, GSV, RMC, GLL, VTG]
+
+
 
 ### Build and Flash
 

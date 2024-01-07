@@ -325,7 +325,7 @@ CONFIG_ESPNOW_WAKE_INTERVAL=1000
 # end of ESP-NOW Lib Configuration
 
 #
-# Example Configuration
+# NMEA UART Parser Configuration
 #
 CONFIG_ENV_GPIO_RANGE_MIN=0
 CONFIG_ENV_GPIO_RANGE_MAX=39
@@ -350,7 +350,7 @@ CONFIG_NMEA_STATEMENT_RMC=y
 CONFIG_NMEA_STATEMENT_GLL=y
 CONFIG_NMEA_STATEMENT_VTG=y
 # end of NMEA Statement Support
-# end of Example Configuration
+# end of NMEA UART Parser Configuration
 
 #
 # Compiler options
