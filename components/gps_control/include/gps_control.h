@@ -9,6 +9,7 @@
 
 // define gps-payload struct that holds longitude and latitude
 typedef struct {
+    int state;
     float longitude;
     float latitude;
 } gps_payload_t;

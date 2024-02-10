@@ -255,15 +255,6 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
 {
     espnow_data_t *buf = (espnow_data_t *)send_param->buffer;
     gps_payload_t payload;
-    // Check if gps_queue is empty
-    if (uxQueueMessagesWaiting(gps_queue) == 0) {
-        // Fill payload with 0xFF
-        
-    }
-    else {
-        // Read from GPS queue and fill payload with GPS data
-        gps_queue_receive(&payload);
-    }
     
     assert(send_param->len >= sizeof(espnow_data_t));
 
@@ -274,26 +265,23 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     buf->magic = send_param->magic;
 
 
-    // Fill first 4 bits of payload with 00 11 
-    // buf->payload[0] = 0x03;
-    // Read from GPS queue and fill payload with GPS data
-    // gps_payload_t payload;
-    // debug print
-    //ESP_LOGI(TAG, "Got here before queue receive in data prepare");
-    //gps_queue_receive(&payload);
-    //ESP_LOGI(TAG, "Got here after queue receive in data prepare");
-    // Print GPS data to console
-    //ESP_LOGI(TAG, "Longitude TX: %f", payload.longitude);
-    //ESP_LOGI(TAG, "Latitude  TX: %f", payload.latitude);
+    // Check if gps_queue is empty
+    if (uxQueueMessagesWaiting(gps_queue) == 0) {
+        // Fill payload with 0xFF
+        
+    }
+    else {
+        // Read from GPS queue and fill payload with GPS data
+        gps_queue_receive(&payload);
+        payload.state = mob_status;
+        // Print GPS data to console
+        ESP_LOGI(TAG, "Longitude TX: %f", payload.longitude);
+        ESP_LOGI(TAG, "Latitude  TX: %f", payload.latitude);
+        // Fill payload with GPS data
+        memcpy(buf->payload, &payload, sizeof(gps_payload_t));
+    }
 
-    //ESP_LOGI(TAG, "Got here data prepare memset");
-    // Fill payload with GPS data
-    //memcpy(buf->payload + 1, &payload, sizeof(gps_payload_t));
-    // Fill remaining bytes with 0xFF
-    //memset(buf->payload + 1 + sizeof(gps_payload_t), 0xFF, sizeof(buf->payload) - sizeof(gps_payload_t) - 1);
-    //ESP_LOGI(TAG, "Got here after data prepare memset");
-    /* Fill all remaining bytes after the data with random values */
-    esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
+    // esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
     // esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
     buf->crc = esp_crc16_le(UINT16_MAX, (uint8_t const *)buf, send_param->len);
 }
