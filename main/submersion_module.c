@@ -63,6 +63,7 @@ static const int ext_wakeup_pin_0 = 25;
 
 static const char *TAG = "Submersion Module";
 
+static int mob_status = MOB_OK;
 // Queue functions that hold GPS longitude and latitude data
 QueueHandle_t gps_queue;
 
@@ -253,6 +254,16 @@ int espnow_data_parse(uint8_t *data, uint16_t data_len, uint8_t *state, uint16_t
 void espnow_data_prepare(espnow_send_param_t *send_param)
 {
     espnow_data_t *buf = (espnow_data_t *)send_param->buffer;
+    gps_payload_t payload;
+    // Check if gps_queue is empty
+    if (uxQueueMessagesWaiting(gps_queue) == 0) {
+        // Fill payload with 0xFF
+        
+    }
+    else {
+        // Read from GPS queue and fill payload with GPS data
+        gps_queue_receive(&payload);
+    }
     
     assert(send_param->len >= sizeof(espnow_data_t));
 
@@ -261,6 +272,7 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     buf->seq_num = s_espnow_seq[buf->type]++;
     buf->crc = 0;
     buf->magic = send_param->magic;
+
 
     // Fill first 4 bits of payload with 00 11 
     // buf->payload[0] = 0x03;
@@ -586,12 +598,12 @@ void app_main(void)
             ret = nvs_flash_init();
         }
         ESP_ERROR_CHECK( ret );
-
+        mob_status = MOB_RESET;
         // Enter Deep Sleep
         config_ext0_wakeup();
         esp_deep_sleep_start();
     } else {
-
+        mob_status = MOB_WAKE;
         start_time = esp_timer_get_time();
         // ESP_LOGI(TAG, "Wake up from GPIO %d\n", ext_wakeup_pin_0);
         esp_err_t ret = nvs_flash_init();
