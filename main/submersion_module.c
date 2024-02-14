@@ -113,7 +113,9 @@ void gps_queue_receive(gps_payload_t *payload)
     // Check if empty
     if (uxQueueMessagesWaiting(gps_queue) == 0) {
         // Fill payload with 0xFF
-        memset(payload, 0xFF, sizeof(gps_payload_t));
+        payload->state = mob_status;
+        payload->latitude = 0xFF;
+        payload->longitude = 0xFF;
         return;
     }
     else {
@@ -257,29 +259,28 @@ void espnow_data_prepare(espnow_send_param_t *send_param)
     gps_payload_t payload;
     
     assert(send_param->len >= sizeof(espnow_data_t));
-
+    printf("Send Len: %d\n", send_param->len);
     buf->type = IS_BROADCAST_ADDR(send_param->dest_mac) ? ESPNOW_DATA_BROADCAST : ESPNOW_DATA_UNICAST;
     buf->state = send_param->state;
     buf->seq_num = s_espnow_seq[buf->type]++;
     buf->crc = 0;
     buf->magic = send_param->magic;
 
-
+    //payload.state = MOB_WAKE;
+    //payload.latitude = 40.7128;
+    //payload.longitude = -74.0060;
     // Check if gps_queue is empty
-    if (uxQueueMessagesWaiting(gps_queue) == 0) {
-        // Fill payload with 0xFF
-        
-    }
-    else {
-        // Read from GPS queue and fill payload with GPS data
-        gps_queue_receive(&payload);
-        payload.state = mob_status;
-        // Print GPS data to console
-        ESP_LOGI(TAG, "Longitude TX: %f", payload.longitude);
-        ESP_LOGI(TAG, "Latitude  TX: %f", payload.latitude);
-        // Fill payload with GPS data
-        memcpy(buf->payload, &payload, sizeof(gps_payload_t));
-    }
+    gps_queue_receive(&payload);
+
+    
+    printf("Longitude out of queue: %f\n", payload.longitude);
+    printf("Latitude out of queue: %f\n", payload.latitude);
+    printf("State out of queue: %d\n", payload.state);
+    payload.state = mob_status;
+
+    // Fill payload with GPS data
+    memcpy(buf->payload, &payload, sizeof(gps_payload_t));
+    // Print payload by byte
 
     // esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));
     // esp_fill_random(buf->payload, send_param->len - sizeof(espnow_data_t));

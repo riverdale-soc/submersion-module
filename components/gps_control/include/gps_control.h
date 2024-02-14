@@ -9,10 +9,10 @@
 
 // define gps-payload struct that holds longitude and latitude
 typedef struct {
-    int state;
+    uint8_t state;
     float longitude;
     float latitude;
-} gps_payload_t;
+} __attribute__((packed)) gps_payload_t;
 
 // Allocate GPIO32 - GPS Enable as an GPIO Output
 #define GPS_ENABLE 32
